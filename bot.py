@@ -7,6 +7,10 @@ import sqlite3
 
 import logging
 
+# other files
+import misc
+from database import database_functions, user
+
 #handler = logging.FileHandler(filename='discord.log', encoding='utf-8', mode='w')
 
 activity = discord.Activity(name = "my activity", type = discord.ActivityType.custom, state = "Farming taters! 🥔")
@@ -43,10 +47,13 @@ async def on_ready():
 async def test(interaction: discord.Interaction):
     await interaction.response.send_message(f"{interaction.user.mention}, bot is up and running!", ephemeral=True)
 
+#ping command
+misc.ping(client)
 
-@client.tree.command(name="ping")
-async def ping(interaction: discord.Interaction):
-    ping = int(client.latency * 1000)
-    await interaction.response.send_message(f"Ping: {ping} ms! 🏓 ")
+#user commands
+user.user(client)
+user.set(client)
 
+
+# CHANGE SECRET ON RELEASE
 client.run('client secret')#, log_handler = handler)
