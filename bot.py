@@ -9,7 +9,8 @@ import logging
 
 # other files
 import misc
-from database import database_functions, user
+from gameplay import farm
+from database import user
 
 #handler = logging.FileHandler(filename='discord.log', encoding='utf-8', mode='w')
 
@@ -55,6 +56,9 @@ user.user(client)
 user.balance(client)
 user.set(client)
 
+#farming commands
+farm.plant(client)
+
 # error handling
 @client.tree.error
 async def on_app_command_error(interaction: discord.Interaction, error: discord.app_commands.AppCommandError):
@@ -65,4 +69,4 @@ async def on_app_command_error(interaction: discord.Interaction, error: discord.
         await interaction.response.send_message(f"An error occurred: {error}", ephemeral=True)
 
 # CHANGE SECRET ON RELEASE
-client.run('MTI4NzQ3MTg3MjY5ODYxMzg1Mw.GV81aG.81yC_8A7Mq5nBrZG8ORY_MEgpgfVPT5a9jv6M8')#, log_handler = handler)
+client.run('client secret')#, log_handler = handler)

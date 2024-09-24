@@ -1,5 +1,4 @@
 import discord
-from discord import app_commands
 
 def ping(client):
     @client.tree.command(name="ping", description="Returns latency time (ms)")
