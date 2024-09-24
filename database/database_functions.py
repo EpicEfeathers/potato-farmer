@@ -39,3 +39,5 @@ def get_potatoes(user_id):
         return row[0]  # Return the potato count
     else:
         return "User not found!"
+add_to_db(747797252105306212, 50)
+print(get_potatoes(747797252105306212))
