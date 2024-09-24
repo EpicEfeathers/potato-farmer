@@ -2,9 +2,21 @@ import discord
 from discord import app_commands
 import sqlite3
 from typing import Optional
+from PIL import Image
+import requests
+from io import BytesIO
 
 
 #print(f"{'\033[1m'}{'\033[91m'}WRONG FILE!")
+
+def get_dominant_color(url):
+    response = requests.get(url)
+    im = Image.open(BytesIO(response.content))
+
+    im1 = im.resize((1,1))
+    color = im1.getpixel((0,0))
+    color = (color[0] << 16) + (color[1] << 8) + color[2]
+    return color
 
 def init_db():
     conn = sqlite3.connect('example.db')
@@ -47,16 +59,38 @@ def set_potatoes(user_id, potatoes):
     conn.commit()
     conn.close()
 
+async def user_stats(interaction, user, client):
+
+    if user:
+        user_id = user.id
+    else:
+        user_id = interaction.user.id
+
+    user = await client.fetch_user(user_id)
+    print(f"User stuff: {user}")
+    if user.accent_color:
+        color = user.accent_color
+    else:
+        color = discord.Color(get_dominant_color(user.avatar.url))
+    
+    potatoes = get_potatoes(user_id)
+
+    embed = discord.Embed(title="Title", description=f"<:tater:1287472775900037182>: {potatoes}", color=color)
+    embed.set_author(name=f"{user.display_name}'s Farm", icon_url='https://cdn.discordapp.com/avatars/747797252105306212/5b95dcc9e05083615df5525de9f6059d.png?size=1024')
+
+    return embed
 
 def user(client):
     @client.tree.command()
-    async def user(interaction: discord.Interaction, user: Optional[discord.User]):
-        if user:
-            user = user.id
-        else:
-            user = interaction.user.id
-        potatoes = get_potatoes(user)
-        await interaction.response.send_message(potatoes)
+    async def user(interaction: discord.Interaction, user: Optional[discord.User] = None):
+        embed = await user_stats(interaction, user, client)
+        await interaction.response.send_message(embed=embed)
+
+def balance(client):
+    @client.tree.command()
+    async def balance(interaction: discord.Interaction, user: Optional[discord.User] = None):
+        embed = await user_stats(interaction, user, client)
+        await interaction.response.send_message(embed=embed)
 
 
 def set(client):

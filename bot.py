@@ -38,7 +38,7 @@ client = MyClient(intents=intents,activity=activity)
 
 @client.event
 async def on_ready():
-    print(f'Successfully logged in as {'\033[1m'}{client.user}')
+    print(f"Successfully logged in as \033[1m{client.user}\033[0m")
 
 
 
@@ -52,15 +52,17 @@ misc.ping(client)
 
 #user commands
 user.user(client)
+user.balance(client)
 user.set(client)
 
-
+# error handling
 @client.tree.error
 async def on_app_command_error(interaction: discord.Interaction, error: discord.app_commands.AppCommandError):
     if isinstance(error, discord.app_commands.CommandInvokeError):
+        print(f"\033[91m{error}\033[0m")
         await interaction.response.send_message(":exclamation: An error occured while processing the request. If this error continues, please report it through the support server.", ephemeral=True)
     else:
         await interaction.response.send_message(f"An error occurred: {error}", ephemeral=True)
 
 # CHANGE SECRET ON RELEASE
-client.run('client secret')#, log_handler = handler)
+client.run('MTI4NzQ3MTg3MjY5ODYxMzg1Mw.GV81aG.81yC_8A7Mq5nBrZG8ORY_MEgpgfVPT5a9jv6M8')#, log_handler = handler)
