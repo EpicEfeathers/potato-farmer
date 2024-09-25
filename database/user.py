@@ -3,22 +3,26 @@ from discord import app_commands
 import sqlite3
 from typing import Optional
 from PIL import Image
-import requests
-from io import BytesIO
+
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join('..', 'functions')))
+import functions
+
 
 
 #print(f"{'\033[1m'}{'\033[91m'}WRONG FILE!")
 
 # obtains dominant color of image (resizing to 1x1 using PIL)
 class Database:
-    def get_dominant_color(self, url):
+    '''def get_dominant_color(self, url):
         response = requests.get(url)
         im = Image.open(BytesIO(response.content))
 
         im1 = im.resize((1,1))
         color = im1.getpixel((0,0))
         color = (color[0] << 16) + (color[1] << 8) + color[2]
-        return color
+        return color'''
 
     # initializes database (shouldn't be needed anymore)
     def init_db(self):
@@ -83,12 +87,12 @@ class Database:
         if user.accent_color:
             color = user.accent_color
         else:
-            color = discord.Color(self.get_dominant_color(user.avatar.url))
+            color = discord.Color(functions.get_dominant_color(user.avatar.url))
         
         potatoes, money = self.get_user(user_id)
 
-        embed = discord.Embed(title=f"<:tater:1287472775900037182> {potatoes}\n<:coin1:1288225115368067073> {money}\n<:coin2:1288225986663682202> {money}", color=color)
-        embed.set_author(name=f"{user.display_name}'s Farm", icon_url='https://cdn.discordapp.com/avatars/747797252105306212/5b95dcc9e05083615df5525de9f6059d.png?size=1024')
+        embed = discord.Embed(title=f"<:tater:1287472775900037182> {functions.format_large_number(potatoes, True)}\n<:coin1:1288225115368067073> {functions.format_large_number(money, True)}\n<:coin2:1288225986663682202> {money}", color=color)
+        embed.set_author(name=f"{user.display_name}'s Farm", icon_url=user.avatar.url)
 
         return embed
 
@@ -112,15 +116,38 @@ def balance(client):
 # set command
 def set(client):
     @client.tree.command()
-    @app_commands.describe(potato_count='Set user\'s potatoes')
-    async def set(interaction: discord.Interaction, user: Optional[discord.User], potato_count: int):
-        if user:
-            user = user.id
+    @app_commands.describe(user='Who should I modify?',potato_count='Set user\'s potatoes',money='Set user\'s money')
+    async def set(interaction: discord.Interaction, user: discord.User, potato_count: Optional[int], money: Optional[int]):
+        # converts mentioned user to their discord ID
+        user_id = user.id
+
+
+        if potato_count is None and money is None:
+            await interaction.response.send_message(":exclamation: You need to provide me something to update!",ephemeral=True)
         else:
-            user = interaction.user.id
-        db.set_user(user, potato_count, 0)
-        print(db.get_user(interaction.user.id))
-        await interaction.response.send_message(f"Set potato count to **{potato_count}**")
+            # gets user's data
+            current_data = db.get_user(user_id)
+
+            changes = []
+
+            # checks to see if user inputted potato_count
+            if potato_count is None:
+                potato_count = current_data[0]
+            else:
+                changes.append(f"Set potato count to **{functions.format_large_number(potato_count, False)}** <:tater:1287472775900037182>")
+            # checks to see if user inputted money
+            if money is None:
+                money = current_data[1]
+            else:
+                changes.append(f"Set money to **{functions.format_large_number(money, False)}** <:coin2:1288225986663682202>")
+
+
+            db.set_user(user_id, potato_count, money)
+
+            embed = await db.user_stats(interaction, user, client)
+
+            await interaction.response.send_message("\n".join(changes),embed=embed)
+            #await interaction.response.send_message(embed=db.user_stats(user_id))
 
 
 db = Database()
