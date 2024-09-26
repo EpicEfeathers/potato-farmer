@@ -38,3 +38,11 @@ def help_embed():
     #embed.add_field(name="undefined", value="undefined", inline=False)
 
     return embed
+
+def timestamp_format(timestamp, format):
+    s = time.gmtime(timestamp)
+
+    if format == 1:
+        return time.strftime("%Y-%m-%d %H:%M:%S", s)
+    elif format == 2:
+        return time.strftime('%A %B %e, %Y %t', s)

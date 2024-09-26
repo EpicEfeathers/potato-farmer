@@ -65,13 +65,13 @@ user.set(client)
 farm.plant(client)
 
 # error handling
-@client.tree.error
+'''@client.tree.error
 async def on_app_command_error(interaction: discord.Interaction, error: discord.app_commands.AppCommandError):
     if isinstance(error, discord.app_commands.CommandInvokeError):
         print(f"\033[91m{error}\033[0m")
         await interaction.response.send_message(":exclamation: An error occured while processing the request. If this error continues, please report it through the support server.", ephemeral=True)
     else:
-        await interaction.response.send_message(f"An error occurred: {error}", ephemeral=True)
+        await interaction.response.send_message(f"An error occurred: {error}", ephemeral=True)'''
 
 # CHANGE SECRET ON RELEASE
 client.run('client secret')#, log_handler = handler)
