@@ -1,6 +1,8 @@
 import requests
 from PIL import Image
 from io import BytesIO
+import time
+import discord
 
 def get_dominant_color(url):
         response = requests.get(url)
@@ -23,3 +25,16 @@ def format_large_number(number: int, shorten: bool):
             return number
     else:
         return f"{number:,}"
+    
+def create_timestamp(add_minutes):
+    current_time = int(time.time())
+    current_time += (add_minutes * 60)
+    timestamp = f"<t:{current_time}:R>"
+    
+    return timestamp
+
+def help_embed():
+    embed=discord.Embed(title="Help",color=0x50C878)
+    #embed.add_field(name="undefined", value="undefined", inline=False)
+
+    return embed

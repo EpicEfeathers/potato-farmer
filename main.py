@@ -20,6 +20,7 @@ activity = discord.Activity(name = "my activity", type = discord.ActivityType.cu
 
 MY_GUILD = discord.Object(id=915714438273826858)
 
+# MyClient class
 class MyClient(discord.Client):
     def __init__(self, *, intents: discord.Intents, activity: discord.Activity):
         super().__init__(intents=intents,activity=activity)
@@ -37,16 +38,20 @@ class MyClient(discord.Client):
 intents = discord.Intents.default()
 client = MyClient(intents=intents,activity=activity)
 
+# When bot boots
 @client.event
 async def on_ready():
     print(f"Successfully logged in as \033[1m{client.user}\033[0m")
 
 
-
-
+# Test command
 @client.tree.command()
 async def test(interaction: discord.Interaction):
     await interaction.response.send_message(f"{interaction.user.mention}, bot is up and running!", ephemeral=True)
+
+# help
+misc.mention(client)
+misc.help(client)
 
 #ping command
 misc.ping(client)

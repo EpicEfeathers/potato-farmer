@@ -3,9 +3,9 @@ from discord import app_commands
 import sqlite3
 from typing import Optional
 from PIL import Image
+import datetime
 
-import sys
-import os
+import sys, os
 sys.path.append(os.path.abspath(os.path.join('..', 'functions')))
 import functions
 
@@ -83,7 +83,6 @@ class Database:
             user_id = interaction.user.id
 
         user = await client.fetch_user(user_id)
-        print(f"User stuff: {user}")
         if user.accent_color:
             color = user.accent_color
         else:
@@ -91,10 +90,16 @@ class Database:
         
         potatoes, money = self.get_user(user_id)
 
-        embed = discord.Embed(title=f"<:tater:1287472775900037182> {functions.format_large_number(potatoes, True)}\n<:coin1:1288225115368067073> {functions.format_large_number(money, True)}\n<:coin2:1288225986663682202> {money}", color=color)
+        embed = discord.Embed(title=f"<:tater:1287472775900037182> {functions.format_large_number(potatoes, True)}\n<:coin2:1288478575825260544> {money}", color=color, timestamp=datetime.datetime.now())
+        
+        image_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'images', 'logo.png'))
+        print(image_path)
+        picture = discord.File(image_path, filename="logo.png")
+        embed.set_thumbnail(url="attachment://logo.png")
+
         embed.set_author(name=f"{user.display_name}'s Farm", icon_url=user.avatar.url)
 
-        return embed
+        return embed, picture
 
 
 
@@ -103,15 +108,15 @@ class Database:
 def user(client):
     @client.tree.command()
     async def user(interaction: discord.Interaction, user: Optional[discord.User] = None):
-        embed = await db.user_stats(interaction, user, client)
-        await interaction.response.send_message(embed=embed)
+        embed, thumbnail = await db.user_stats(interaction, user, client)
+        await interaction.response.send_message(embed=embed, file=thumbnail)
 
 # balance command
 def balance(client):
     @client.tree.command()
     async def balance(interaction: discord.Interaction, user: Optional[discord.User] = None):
-        embed = await db.user_stats(interaction, user, client)
-        await interaction.response.send_message(embed=embed)
+        embed, thumbnail = await db.user_stats(interaction, user, client)
+        await interaction.response.send_message(embed=embed, file=thumbnail)
 
 # set command
 def set(client):
@@ -139,14 +144,14 @@ def set(client):
             if money is None:
                 money = current_data[1]
             else:
-                changes.append(f"Set money to **{functions.format_large_number(money, False)}** <:coin2:1288225986663682202>")
+                changes.append(f"Set money to **{functions.format_large_number(money, False)}** <:coin2:1288478575825260544>")
 
 
             db.set_user(user_id, potato_count, money)
 
-            embed = await db.user_stats(interaction, user, client)
+            embed, thumbnail = await db.user_stats(interaction, user, client)
 
-            await interaction.response.send_message("\n".join(changes),embed=embed)
+            await interaction.response.send_message("\n".join(changes),embed=embed, file=thumbnail)
             #await interaction.response.send_message(embed=db.user_stats(user_id))
 
 
