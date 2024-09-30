@@ -9,8 +9,7 @@ import logging
 
 # other files
 import misc
-from gameplay import farm
-from database import user
+from database import user, user_functions
 
 #handler = logging.FileHandler(filename='discord.log', encoding='utf-8', mode='w')
 
@@ -60,9 +59,16 @@ misc.ping(client)
 user.user(client)
 user.balance(client)
 user.set(client)
+user.add(client)
+user.farm(client)
+user.harvest(client)
+user.plant(client)
 
-#farming commands
-farm.plant(client)
+@client.event
+async def on_interaction(interaction: discord.Interaction):
+    if interaction.type == discord.InteractionType.application_command:
+        #print("Slash command")
+        user_functions.add_user_message_count(interaction.user.id)
 
 # error handling
 '''@client.tree.error

@@ -72,8 +72,6 @@ def farm_creation_date(user_id):
         return timestamp
     
 
-
-
 def get_harvest_time(user_id):
     conn = sqlite3.connect('database/users.db')
     c = conn.cursor()
@@ -106,6 +104,16 @@ def check_harvest_time(user_id, add_minutes):
     else:
         print("Did not update")
         return timestamp
+    
+def get_harvest_time(user_id):
+    conn = sqlite3.connect('database/users.db')
+    c = conn.cursor()
+
+    c.execute("SELECT harvest_time FROM farms WHERE user_id = ?", (user_id,))
+    row = c.fetchone()
+
+    return row[0]
+
 
 '''print(farm_creation_date(747797252105306212)[0])
 print(time.time())'''

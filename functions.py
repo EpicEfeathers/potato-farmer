@@ -26,10 +26,9 @@ def format_large_number(number: int, shorten: bool):
     else:
         return f"{number:,}"
     
-def create_timestamp(add_minutes):
-    current_time = int(time.time())
-    current_time += (add_minutes * 60)
-    timestamp = f"<t:{current_time}:R>"
+def create_timestamp(timestamp):#, add_minutes):
+    #timestamp += (add_minutes * 60)
+    timestamp = f"<t:{timestamp}:R>"
     
     return timestamp
 
@@ -46,3 +45,8 @@ def timestamp_format(timestamp, format):
         return time.strftime("%Y-%m-%d %H:%M:%S", s)
     elif format == 2:
         return time.strftime('%A %B %e, %Y %t', s)
+    
+def compare_times(timestamp):
+    current_time = time.time()
+
+    return timestamp - current_time
