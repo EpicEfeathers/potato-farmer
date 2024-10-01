@@ -63,6 +63,7 @@ user.add(client)
 user.farm(client)
 user.harvest(client)
 user.plant(client)
+user.sell(client)
 
 @client.event
 async def on_interaction(interaction: discord.Interaction):

@@ -115,17 +115,17 @@ def farm(client):
     async def farm(interaction: discord.Interaction):
         user_id = interaction.user.id
 
-        potatoes_ready = round(user_functions.get_potatoes_ready(user_id))
-        farm_size = user_functions.get_farm_size(user_id)
-
         timestamp = user_functions.get_harvest_time(user_id)
-        ready_timestamp = functions.create_timestamp(timestamp)
 
-        # checking to see if potatoes have already been harvested or not
-        if timestamp == 0:
+        # checking to see if user's timestamp actually exists (new user) or if it has just been harvested
+        if timestamp is None or timestamp == 0:
             await interaction.response.send_message(f"Farm must be planted first.\nUse </plant:1288195246446084138> to plant.")
         else:
-            await interaction.response.send_message(f"Farm ready: {ready_timestamp}\n{potatoes_ready}/{farm_size}")
+            potatoes_ready = round(user_functions.get_potatoes_ready(user_id))
+            farm_size = user_functions.get_farm_size(user_id)
+
+            ready_timestamp = functions.create_timestamp(timestamp)
+            await interaction.response.send_message(f"Farm ready: {ready_timestamp}\nCurrently {round(potatoes_ready/farm_size*100)}% full ({potatoes_ready}/{farm_size})\nUse </harvest:1290117892930535434> to harvest.")
 
 def harvest(client):
     @client.tree.command()
@@ -149,13 +149,25 @@ def plant(client):
         user_id = interaction.user.id
         # set harvest time to user's full harvest time plus the current time
         old_timestamp = user_functions.get_harvest_time(user_id)
-        if old_timestamp == 0:
+        if old_timestamp == 0 or old_timestamp is None:
             timestamp = int(time.time()) + user_functions.get_total_harvest_time(user_id)
             user_functions.set_harvest_time(user_id, timestamp)
 
             farm_size = user_functions.get_farm_size(user_id)
             formatted_timestamp = functions.create_timestamp(timestamp)
 
-            await interaction.response.send_message(f"Planted `{farm_size}` potatoes.\nFarm ready: {formatted_timestamp}")
+            await interaction.response.send_message(f"Planted `{farm_size}` potatoes.\nFarm ready: {formatted_timestamp}\nUse </farm:1289251039341711490> to check on your farm.")
         else:
             await interaction.response.send_message(f"Farm already planted.\nUse </farm:1289251039341711490> to see your farm.")
+
+def sell(client):
+    @client.tree.command()
+    async def sell(interaction: discord.Interaction):
+        user_id = interaction.user.id
+        sell_value = 1
+
+        potatoes, money = user_functions.get_user(user_id)
+
+        # add potatoes to money count, and remove potatoes amount from user's potatoes count
+        user_functions.add_to_user(user_id=user_id,money=(potatoes * sell_value), potatoes=(-1 * potatoes))
+        await interaction.response.send_message("Works!")

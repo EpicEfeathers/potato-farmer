@@ -9,6 +9,9 @@ sys.path.append(parent_dir)
 
 import functions
 
+BASE_HARVEST_TIME = 30
+BASE_FARM_SIZE = 20
+
 # initializes database (shouldn't be needed anymore)
 def init_db():
     conn = sqlite3.connect('database/users.db')
@@ -25,9 +28,9 @@ def init_db():
     c.execute('''CREATE TABLE IF NOT EXISTS farms (
                     user_id INTEGER PRIMARY KEY,
                     farm_created TIMESTAMP,
-                    total_harvest_time TIMESTAMP,
-                    harvest_time INTEGER,
-                    farm_size INTEGER,
+                    total_harvest_time TIMESTAMP DEFAULT 30,
+                    harvest_time INTEGER DEFAUL 0,
+                    farm_size INTEGER DEFAULT 20,
                     FOREIGN KEY (user_id) REFERENCES users(user_id)
                 );
             ''')
@@ -95,7 +98,7 @@ def farm_creation_date(user_id):
     row = c.fetchone()
 
     if row:
-        return row[0]
+        creation_date = row[0]
     else:
         timestamp = int(time.time())
 
@@ -103,8 +106,9 @@ def farm_creation_date(user_id):
         c.execute("INSERT INTO farms (user_id, farm_created) VALUES (?, ?)", (user_id, timestamp))
 
         conn.commit()
-        conn.close()
-        return timestamp
+        creation_date = timestamp
+    conn.close()
+    return creation_date
 
 # displays the user's stats
 async def user_stats(interaction, user, client):
@@ -146,7 +150,17 @@ def get_total_harvest_time(user_id):
     c.execute("SELECT total_harvest_time FROM farms WHERE user_id = ?", (user_id,))
     row = c.fetchone()
 
-    return row[0]
+    if row and row[0] is not None:
+        total_harvest_time = row[0]
+    else:
+        if row:
+            c.execute("UPDATE farms SET total_harvest_time = ? WHERE user_id = ?", (BASE_HARVEST_TIME, user_id))
+        else:
+            c.execute("INSERT INTO farms (user_id, harvest_time) VALUES (?,?)", (user_id, BASE_HARVEST_TIME,))
+        conn.commit()
+        total_harvest_time = BASE_HARVEST_TIME
+    conn.close()
+    return total_harvest_time
 
 # sets length of time full harvest will take (in seconds)
 def set_total_harvest_time(user_id, total_harvest_time):
@@ -174,7 +188,13 @@ def get_harvest_time(user_id):
     c.execute("SELECT harvest_time FROM farms WHERE user_id = ?", (user_id,))
     row = c.fetchone()
 
-    return row[0]
+    if row:
+        conn.close()
+        return row[0]
+    else:
+        c.execute("INSERT INTO farms (user_id, harvest_time) VALUES (?,?)", (user_id, 0))
+        conn.commit()
+        conn.close()
 
 # sets timestamp (UNIX time?) that full harvest will be ready at
 def set_harvest_time(user_id, timestamp):
@@ -202,7 +222,17 @@ def get_farm_size(user_id):
     c.execute("SELECT farm_size FROM farms WHERE user_id = ?", (user_id,))
     row = c.fetchone()
 
-    return row[0]
+    if row and row[0] is not None:
+        farm_size = row[0]
+    else:
+        if row:
+            c.execute("UPDATE farms SET farm_size = ? WHERE user_id = ?", (BASE_FARM_SIZE, user_id))
+        else:
+            c.execute("INSERT INTO farms (user_id, farm_size) VALUES (?, ?)", (user_id, BASE_FARM_SIZE))
+        farm_size = BASE_FARM_SIZE
+
+    conn.close()
+    return farm_size
 
 # sets user's farm size
 def set_farm_size(user_id, farm_size):
@@ -227,7 +257,7 @@ def set_farm_size(user_id, farm_size):
 def get_potatoes_ready(user_id):
     total_harvest_time = get_total_harvest_time(user_id)
     harvest_time = get_harvest_time(user_id)
-    
+
     current_time = int(time.time())
     farm_size = get_farm_size(user_id)
 
@@ -245,6 +275,7 @@ def get_user_message_count(user_id):
     c.execute("SELECT message_count FROM users WHERE user_id = ?", (user_id,))
     row = c.fetchone()
 
+    conn.close()
     return row[0]
 
 def add_user_message_count(user_id):
